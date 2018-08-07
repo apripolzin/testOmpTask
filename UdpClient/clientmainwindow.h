@@ -6,6 +6,11 @@
 #include <QPushButton>
 #include <QString>
 #include <QLabel>
+#include <QProgressBar>
+#include <QUdpSocket>
+#include <QLineEdit>
+#include <QDoubleSpinBox>
+#include <QSettings>
 
 class ClientMainWindow : public QWidget
 {
@@ -15,9 +20,18 @@ public:
     virtual ~ClientMainWindow() override;
 
 private:
-    QPointer<QPushButton> pbOpenFile;
-    QPointer<QLabel> lblFileToSend;
+    QPointer<QPushButton>    pbOpenFile;
+    QPointer<QLabel>         lblFileToSend;
+    QPointer<QPushButton>    pbUploadFile;
+    QPointer<QProgressBar>   uploadingProgress;
+    QPointer<QLineEdit>      leServerAddress;
+    QPointer<QDoubleSpinBox> dsbServerPort;
+    QPointer<QUdpSocket>     clientSocket;
     QString uploadFileName;
+
+
+private slots:
+    void slotUploadFile();
 };
 
 #endif // CLIENTMAINWINDOW_H
