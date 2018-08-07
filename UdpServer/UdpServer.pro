@@ -5,8 +5,6 @@ TARGET = UdpServer
 TEMPLATE = app
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp
+        main.cpp
 
-HEADERS += \
-        mainwindow.h
+HEADERS +=
