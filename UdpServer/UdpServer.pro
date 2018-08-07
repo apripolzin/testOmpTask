@@ -1,10 +1,13 @@
 
-QT       += core gui widgets
+QT += core gui widgets
 
 TARGET = UdpServer
 TEMPLATE = app
 
 SOURCES += \
-        main.cpp
+        main.cpp \
+    servermainwindow.cpp
 
-HEADERS +=
+HEADERS += \
+    servermainwindow.h
+

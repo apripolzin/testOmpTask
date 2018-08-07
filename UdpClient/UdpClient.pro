@@ -1,9 +1,12 @@
 QT       += core gui widgets
 
 TARGET = UdpClient
+
 TEMPLATE = app
 
 SOURCES += \
-        main.cpp
+        main.cpp \
+    clientmainwindow.cpp
 
-HEADERS +=
+HEADERS += \
+    clientmainwindow.h
