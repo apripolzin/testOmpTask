@@ -2,6 +2,8 @@
 #include <QVBoxLayout>
 #include <QDebug>
 #include <QNetworkDatagram>
+#include <QFile>
+#include <QApplication>
 
 ClientMainWindow *ClientMainWindow::pInstance = nullptr;
 
@@ -16,10 +18,19 @@ ClientMainWindow::ClientMainWindow(QWidget *parent) : QWidget(parent)
     clientSocket = new QUdpSocket;
     clientSocket->bind(777);
 
+    fileSendSocket = new QUdpSocket;
+
     connect(clientSocket, &QUdpSocket::readyRead, [=](){
-        while (clientSocket->hasPendingDatagrams()){
-            QNetworkDatagram datagram = clientSocket->receiveDatagram();
-            qDebug() << "Received" << datagram.data();
+        while (clientSocket->hasPendingDatagrams()) {
+            QByteArray baDatagram;
+            baDatagram.resize(int(clientSocket->pendingDatagramSize()));
+            clientSocket->readDatagram(baDatagram.data(), baDatagram.size());
+            QDataStream in(&baDatagram, QIODevice::ReadOnly);
+            qint64 filesize;
+            in >> filesize;
+            qDebug() << "Received filesize " << filesize;
+            this->sendFileChunk(int(filesize));
+            qApp->processEvents();
         }
     });
 }
@@ -38,6 +49,24 @@ ClientMainWindow *ClientMainWindow::getInstance()
 void ClientMainWindow::logMessage(const QString &mes)
 {
     teLog->moveCursor(QTextCursor::Start);
-    teLog->append(mes + "\n");
+    teLog->insertPlainText(mes + "\n");
+}
+
+void ClientMainWindow::sendFileChunk(int seekFrom)
+{
+    qDebug() << "sendilng from" << seekFrom;
+    QFile uploadFile (QApplication::applicationDirPath() + "/out.pdf");
+    if (!uploadFile.exists()){
+        qDebug() << uploadFile.fileName() << " not exists";
+        return;
+    }
+
+    if (!uploadFile.open(QIODevice::ReadOnly)){
+        qDebug() << "cannot open" << uploadFile.fileName();
+        return;
+    }
+    uploadFile.seek(seekFrom);
+    QByteArray baDatagram = uploadFile.read(2048);
+    fileSendSocket->writeDatagram(baDatagram, QHostAddress::LocalHost, 771);
 }
 

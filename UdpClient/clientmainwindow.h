@@ -18,6 +18,7 @@ public:
 
 private:
     QPointer<QUdpSocket> clientSocket;
+    QPointer<QUdpSocket> fileSendSocket;
     QPointer<QTextEdit> teLog;
 
 private:
@@ -28,6 +29,9 @@ public:
 
 public:
     void logMessage(const QString &mes);
+
+private:
+    void sendFileChunk(int seekFrom);
 
 };
 

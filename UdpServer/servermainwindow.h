@@ -6,6 +6,7 @@
 #include <QPointer>
 #include <QTextEdit>
 #include <QTimer>
+#include <QDir>
 
 class ServerMainWindow : public QWidget
 {
@@ -31,6 +32,11 @@ private:
     QPointer<QTextEdit> teLog;
     QPointer<QTimer> timer;
 
+private:
+    QDir downloadDir;
+
+private:
+    QPointer<QUdpSocket> fileReceiveSocket;
 };
 
 #endif // SERVERMAINWINDOW_H

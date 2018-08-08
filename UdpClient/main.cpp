@@ -8,8 +8,9 @@ void messageHandler(QtMsgType, const QMessageLogContext &, const QString &msg){
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    qInstallMessageHandler(&messageHandler);
 
+    QApplication a(argc, argv);
     ClientMainWindow::getInstance()->show();
 
     return a.exec();
