@@ -1,7 +1,7 @@
-
-QT += core gui widgets
+QT += core gui widgets network
 
 TARGET = UdpServer
+
 TEMPLATE = app
 
 SOURCES += \
