@@ -4,7 +4,6 @@
 #include <QNetworkDatagram>
 #include <QFile>
 #include <QApplication>
-#include "JlCompress.h"
 
 ClientMainWindow *ClientMainWindow::pInstance = nullptr;
 
@@ -95,7 +94,5 @@ void ClientMainWindow::compressFileToUpload()
 {
     QFile compressedFile(compressedFileName);
     QFile uploadFile(uploadFileName);
-
-    JlCompress::compressFiles(compressedFileName ,QStringList() << uploadFile.fileName());
 }
 
