@@ -4,14 +4,24 @@
 #include <QNetworkDatagram>
 #include <QFile>
 #include <QApplication>
+#include "JlCompress.h"
 
 ClientMainWindow *ClientMainWindow::pInstance = nullptr;
 
-ClientMainWindow::ClientMainWindow(QWidget *parent) : QWidget(parent)
+ClientMainWindow::ClientMainWindow(QWidget *parent)
+    : QWidget(parent),
+      uploadFileName(QApplication::applicationDirPath() + "/out.pdf"),
+      compressedFileName(QApplication::applicationDirPath() + "/out.zip")
 {
     QVBoxLayout *mainLayout = new QVBoxLayout;
 
     teLog = new QTextEdit;
+    pbProgress = new QProgressBar;
+    pbProgress->setTextVisible(true);
+    pbProgress->setMinimum(0);
+    pbProgress->setAlignment(Qt::AlignCenter);
+
+    mainLayout->addWidget(pbProgress);
     mainLayout->addWidget(teLog);
     this->setLayout(mainLayout);
 
@@ -33,6 +43,8 @@ ClientMainWindow::ClientMainWindow(QWidget *parent) : QWidget(parent)
             qApp->processEvents();
         }
     });
+
+    //compressFileToUpload();
 }
 
 ClientMainWindow::~ClientMainWindow()
@@ -54,8 +66,8 @@ void ClientMainWindow::logMessage(const QString &mes)
 
 void ClientMainWindow::sendFileChunk(int seekFrom)
 {
-    qDebug() << "sendilng from" << seekFrom;
-    QFile uploadFile (QApplication::applicationDirPath() + "/out.pdf");
+    QFile uploadFile (uploadFileName);
+
     if (!uploadFile.exists()){
         qDebug() << uploadFile.fileName() << " not exists";
         return;
@@ -65,8 +77,25 @@ void ClientMainWindow::sendFileChunk(int seekFrom)
         qDebug() << "cannot open" << uploadFile.fileName();
         return;
     }
+
+    pbProgress->setMaximum(int(uploadFile.size()));
+    pbProgress->setValue(seekFrom);
+    pbProgress->setFormat(QString("%1/%2").arg(seekFrom).arg(uploadFile.size()));
+    if (seekFrom >= uploadFile.size()){
+        pbProgress->setFormat("Comlete");
+        return;
+    }
+
     uploadFile.seek(seekFrom);
     QByteArray baDatagram = uploadFile.read(2048);
     fileSendSocket->writeDatagram(baDatagram, QHostAddress::LocalHost, 771);
+}
+
+void ClientMainWindow::compressFileToUpload()
+{
+    QFile compressedFile(compressedFileName);
+    QFile uploadFile(uploadFileName);
+
+    JlCompress::compressFiles(compressedFileName ,QStringList() << uploadFile.fileName());
 }
 

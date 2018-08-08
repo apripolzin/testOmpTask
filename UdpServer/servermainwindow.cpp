@@ -46,6 +46,7 @@ ServerMainWindow::ServerMainWindow(QWidget *parent) : QWidget(parent),
 
         if (!uploadedFile.open(QIODevice::Append)){
             qDebug() << "Error opening to append" << uploadedFile.fileName();
+            return;
         }
 
         while (fileReceiveSocket->hasPendingDatagrams()) {
