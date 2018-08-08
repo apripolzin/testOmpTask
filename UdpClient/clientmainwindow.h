@@ -3,35 +3,32 @@
 
 #include <QWidget>
 #include <QPointer>
-#include <QPushButton>
-#include <QString>
-#include <QLabel>
-#include <QProgressBar>
 #include <QUdpSocket>
-#include <QLineEdit>
-#include <QDoubleSpinBox>
-#include <QSettings>
+#include <QTextEdit>
 
 class ClientMainWindow : public QWidget
 {
     Q_OBJECT
-public:
+
+private:
     explicit ClientMainWindow(QWidget *parent = nullptr);
+
+public:    
     virtual ~ClientMainWindow() override;
 
 private:
-    QPointer<QPushButton>    pbOpenFile;
-    QPointer<QLabel>         lblFileToSend;
-    QPointer<QPushButton>    pbUploadFile;
-    QPointer<QProgressBar>   uploadingProgress;
-    QPointer<QLineEdit>      leServerAddress;
-    QPointer<QDoubleSpinBox> dsbServerPort;
-    QPointer<QUdpSocket>     clientSocket;
-    QString uploadFileName;
+    QPointer<QUdpSocket> clientSocket;
+    QPointer<QTextEdit> teLog;
 
+private:
+    static ClientMainWindow* pInstance;
 
-private slots:
-    void slotUploadFile();
+public:
+    static ClientMainWindow *getInstance();
+
+public:
+    void logMessage(const QString &mes);
+
 };
 
 #endif // CLIENTMAINWINDOW_H

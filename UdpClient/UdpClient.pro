@@ -2,8 +2,6 @@ QT += core gui widgets network
 
 TARGET = UdpClient
 
-CONFIG += console
-
 TEMPLATE = app
 
 SOURCES += \

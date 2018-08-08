@@ -4,23 +4,32 @@
 #include <QWidget>
 #include <QUdpSocket>
 #include <QPointer>
-#include <QDoubleSpinBox>
-#include <QPushButton>
+#include <QTextEdit>
+#include <QTimer>
 
 class ServerMainWindow : public QWidget
 {
     Q_OBJECT
-public:
+private:
     ServerMainWindow(QWidget *parent = nullptr);
     virtual ~ServerMainWindow() override;
 
-protected:
-    QPointer<QUdpSocket>     serverSocket;
-    QPointer<QDoubleSpinBox> dsbPort;
-    QPointer<QPushButton>    pbBind;
-
 private slots:
     void readPendingDatagrams();
+
+private:
+    static ServerMainWindow *pInstance;
+
+public:
+    static ServerMainWindow *getInstance();
+
+public:
+    void logMessage(const QString &msg);
+
+private:
+    QPointer<QUdpSocket> serverSocket;
+    QPointer<QTextEdit> teLog;
+    QPointer<QTimer> timer;
 
 };
 

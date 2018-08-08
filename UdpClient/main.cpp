@@ -1,13 +1,16 @@
 #include <QApplication>
 #include "clientmainwindow.h"
-#include <QDebug>
+
+void messageHandler(QtMsgType, const QMessageLogContext &, const QString &msg){
+    ClientMainWindow::getInstance()->logMessage(msg);
+}
+
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    ClientMainWindow w;
-    w.show();
+    ClientMainWindow::getInstance()->show();
 
     return a.exec();
 }

@@ -1,59 +1,43 @@
 #include "clientmainwindow.h"
-#include <QFileDialog>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QHostAddress>
 #include <QDebug>
+#include <QNetworkDatagram>
 
-ClientMainWindow::ClientMainWindow(QWidget *parent) : QWidget(parent), uploadFileName("")
+ClientMainWindow *ClientMainWindow::pInstance = nullptr;
+
+ClientMainWindow::ClientMainWindow(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout;
-    QHBoxLayout *openFileLayout = new QHBoxLayout;
 
-    pbOpenFile = new QPushButton("Open...");
-    lblFileToSend = new QLabel(uploadFileName);
-    connect(pbOpenFile, &QPushButton::clicked, [=](){
-        uploadFileName = QFileDialog::getOpenFileName(this, "Open PDF file", "..", "*.pdf");
-        lblFileToSend->setText(uploadFileName);
-        pbUploadFile->setEnabled(true);
-        connect(pbUploadFile, &QPushButton::clicked, this, &ClientMainWindow::slotUploadFile);
-    });
-
-    pbUploadFile = new QPushButton("Upload");
-    if (uploadFileName == "")
-        pbUploadFile->setEnabled(false);
-
-    uploadingProgress = new QProgressBar;
-
-    openFileLayout->addWidget(pbOpenFile);
-    openFileLayout->addWidget(lblFileToSend);
-    openFileLayout->addStretch();
-
-    leServerAddress = new QLineEdit("127.0.0.1");
-    dsbServerPort = new QDoubleSpinBox;
-    dsbServerPort->setDecimals(0);
-    dsbServerPort->setRange(0, 65535);
-    dsbServerPort->setValue(7111);
-
-    QHBoxLayout *serverSettingsLayout = new QHBoxLayout;
-    serverSettingsLayout->addWidget(leServerAddress);
-    serverSettingsLayout->addWidget(dsbServerPort);
-
-    mainLayout->addLayout(openFileLayout);
-    mainLayout->addLayout(serverSettingsLayout);
-    mainLayout->addWidget(pbUploadFile);
-    mainLayout->addWidget(uploadingProgress);
-    mainLayout->addStretch();
+    teLog = new QTextEdit;
+    mainLayout->addWidget(teLog);
     this->setLayout(mainLayout);
 
     clientSocket = new QUdpSocket;
+    clientSocket->bind(777);
+
+    connect(clientSocket, &QUdpSocket::readyRead, [=](){
+        while (clientSocket->hasPendingDatagrams()){
+            QNetworkDatagram datagram = clientSocket->receiveDatagram();
+            qDebug() << "Received" << datagram.data();
+        }
+    });
 }
 
 ClientMainWindow::~ClientMainWindow()
 {
 }
 
-void ClientMainWindow::slotUploadFile()
+ClientMainWindow *ClientMainWindow::getInstance()
 {
-    qDebug() << clientSocket->writeDatagram(QByteArray("Hello!!!"), QHostAddress(leServerAddress->text()), quint16(dsbServerPort->value()));
+    if (!pInstance)
+        pInstance = new ClientMainWindow();
+    return pInstance;
 }
+
+void ClientMainWindow::logMessage(const QString &mes)
+{
+    teLog->moveCursor(QTextCursor::Start);
+    teLog->append(mes + "\n");
+}
+
