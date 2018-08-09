@@ -4,13 +4,14 @@
 #include <QNetworkDatagram>
 #include <QFile>
 #include <QApplication>
+#include <QMessageBox>
 
 ClientMainWindow *ClientMainWindow::pInstance = nullptr;
 
 ClientMainWindow::ClientMainWindow(QWidget *parent)
     : QWidget(parent),
       uploadFileName(QApplication::applicationDirPath() + "/out.pdf"),
-      compressedFileName(QApplication::applicationDirPath() + "/out.zip")
+      compressedFileName(QApplication::applicationDirPath() + "/out.compressed")
 {
     QVBoxLayout *mainLayout = new QVBoxLayout;
 
@@ -43,7 +44,7 @@ ClientMainWindow::ClientMainWindow(QWidget *parent)
         }
     });
 
-    //compressFileToUpload();
+    compressFileToUpload();
 }
 
 ClientMainWindow::~ClientMainWindow()
@@ -65,7 +66,8 @@ void ClientMainWindow::logMessage(const QString &mes)
 
 void ClientMainWindow::sendFileChunk(int seekFrom)
 {
-    QFile uploadFile (uploadFileName);
+    //QFile uploadFile (uploadFileName);
+    QFile uploadFile (compressedFileName);
 
     if (!uploadFile.exists()){
         qDebug() << uploadFile.fileName() << " not exists";
@@ -94,5 +96,25 @@ void ClientMainWindow::compressFileToUpload()
 {
     QFile compressedFile(compressedFileName);
     QFile uploadFile(uploadFileName);
+
+    if (compressedFile.exists())
+        return;
+
+    if (!uploadFile.open(QIODevice::ReadOnly)){
+        QMessageBox::critical(nullptr, "Create archive error", QString("Cannot open file %1 for read").arg(compressedFile.fileName()));
+        return;
+    }
+
+    if (!uploadFile.exists()){
+        QMessageBox::critical(nullptr, "Create archive error", QString("File %1 not exists").arg(uploadFile.fileName()));
+        return;
+    }
+
+    if (!compressedFile.open(QIODevice::WriteOnly)){
+        QMessageBox::critical(nullptr, "Create archive error", QString("Cannot open file %1 for write").arg(uploadFile.fileName()));
+        return;
+    }
+
+    compressedFile.write(qCompress(uploadFile.readAll()));
 }
 
