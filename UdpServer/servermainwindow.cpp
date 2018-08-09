@@ -5,11 +5,13 @@
 #include <QNetworkDatagram>
 #include <QApplication>
 #include <QFile>
+#include <QPushButton>
+#include <QMessageBox>
 
 ServerMainWindow *ServerMainWindow::pInstance = nullptr;
 
 ServerMainWindow::ServerMainWindow(QWidget *parent) : QWidget(parent),
-    downloadDir(QApplication::applicationDirPath() + "/Download")
+    downloadDir(QApplication::applicationDirPath() + "/Download"), interval(300)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout;
     teLog = new QTextEdit;
@@ -18,7 +20,7 @@ ServerMainWindow::ServerMainWindow(QWidget *parent) : QWidget(parent),
 
     serverSocket = new QUdpSocket(this);
 
-    QString uploadedFilePath = downloadDir.absolutePath() + "/uploaded.bin";
+    QString uploadedFilePath = downloadDir.absolutePath() + "/uploaded.compressed";
 
     timer = new QTimer;
     connect(timer, &QTimer::timeout, [=](){
@@ -33,7 +35,7 @@ ServerMainWindow::ServerMainWindow(QWidget *parent) : QWidget(parent),
 
         serverSocket->writeDatagram(baDatagram, QHostAddress::LocalHost, 777);
     });
-    timer->start(300);
+    timer->start(interval);
 
     if (!downloadDir.exists()){
         downloadDir.mkpath(downloadDir.absolutePath());
@@ -53,6 +55,28 @@ ServerMainWindow::ServerMainWindow(QWidget *parent) : QWidget(parent),
             uploadedFile.write(fileReceiveSocket->receiveDatagram().data());
             qApp->processEvents();
         }
+    });
+
+    QPushButton *pbUncompress = new QPushButton("Uncompress");
+    mainLayout->addWidget(pbUncompress);
+    connect(pbUncompress, &QPushButton::clicked, [=](){
+        timer->stop();
+        QFile uploadedFile(uploadedFilePath);
+        QFile uncompressedFile(downloadDir.absolutePath() + "/uncompressed.pdf");
+
+        if (!uploadedFile.open(QIODevice::ReadOnly)){
+            QMessageBox::critical(nullptr, "Unable to open file", QString("Unable to open file %1 for read").arg(uploadedFile.fileName()));
+            timer->start(interval);
+            return;
+        }
+
+        if (!uncompressedFile.open(QIODevice::WriteOnly)){
+            QMessageBox::critical(nullptr, "Unable to open file", QString("Unable to open file %1 for write").arg(uncompressedFile.fileName()));
+            timer->start(interval);
+            return;
+        }
+        uncompressedFile.write(qUncompress(uploadedFile.readAll()));
+        timer->start(interval);
     });
 
 }

@@ -37,6 +37,9 @@ private:
 
 private:
     QPointer<QUdpSocket> fileReceiveSocket;
+
+private:
+    const int interval;
 };
 
 #endif // SERVERMAINWINDOW_H
